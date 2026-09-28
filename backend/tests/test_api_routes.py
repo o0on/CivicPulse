@@ -92,3 +92,5 @@ async def test_rate_limit_429(mock_is_allowed, test_client):
     response = await test_client.post("/api/complaints", json={"text": "Valid text description for rate limit test", "location": "Valid location"})
     assert response.status_code == 429
     assert response.headers.get("Retry-After") == "45"
+
+# Test: pagination boundary limits up to 100 items
