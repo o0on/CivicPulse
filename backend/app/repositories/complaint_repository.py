@@ -91,3 +91,5 @@ class ComplaintRepository:
             "by_status": by_status,
             "total": total
         }
+
+# Index optimization: utilizes idx_complaints_status_priority
