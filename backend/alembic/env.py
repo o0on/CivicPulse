@@ -1,5 +1,10 @@
 import asyncio
 from logging.config import fileConfig
+from pathlib import Path
+import sys
+
+# Ensure backend root is on sys.path for Alembic module resolution
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from sqlalchemy import pool
 from sqlalchemy.engine import Connection
