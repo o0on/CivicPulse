@@ -1,10 +1,11 @@
-from app.providers.triage.base import TriageProvider, TriageResult
 from app.models import Category, Priority
+from app.providers.triage.base import TriageResult
+
 
 class RuleBasedTriage:
     name: str = "rules"
 
-    async def triage(self, text: str, location: str) -> TriageResult:
+    async def triage(self, text: str, location: str = "") -> TriageResult:
         text_lower = text.lower()
         
         # Determine Category
@@ -14,7 +15,7 @@ class RuleBasedTriage:
                 category = Category.sanitation
             else:
                 category = Category.water
-        elif any(kw in text_lower for kw in ["electricity", "bijli", "transformer", "load-shedding", "bijli ka khamba"]):
+        elif any(kw in text_lower for kw in ["electricity", "bijli", "transformer", "load-shedding", "load shedding", "power", "bijli ka khamba"]):
             if "bijli ka khamba" in text_lower:
                 category = Category.streetlights
             else:

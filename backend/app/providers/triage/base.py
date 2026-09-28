@@ -1,6 +1,9 @@
-from pydantic import BaseModel, Field
 from typing import Protocol, runtime_checkable
+
+from pydantic import BaseModel, Field
+
 from app.models import Category, Priority
+
 
 class TriageResult(BaseModel):
     category: Category

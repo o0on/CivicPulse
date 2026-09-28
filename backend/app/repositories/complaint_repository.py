@@ -1,18 +1,20 @@
 from uuid import UUID
+
 from pydantic import BaseModel
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, func
-from typing import Optional, Tuple, List, Dict, Any
-from app.models import Complaint, ComplaintStatus, Category, Priority
+
+from app.models import Category, Complaint, ComplaintStatus, Priority
+
 
 class ComplaintCreate(BaseModel):
     text: str
     location: str
-    reporter_contact: Optional[str] = None
+    reporter_contact: str | None = None
     category: Category
     priority: Priority
-    ai_summary: Optional[str] = None
-    triaged_by: Optional[str] = None
+    ai_summary: str | None = None
+    triaged_by: str | None = None
     triage_latency_ms: int
 
 class ComplaintRepository:

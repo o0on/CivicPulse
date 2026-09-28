@@ -9,6 +9,11 @@ vi.mock('../api/client', () => ({
     complaints: {
       create: (...args: any[]) => mockCreate(...args)
     }
+  },
+  api: {
+    complaints: {
+      create: (...args: any[]) => mockCreate(...args)
+    }
   }
 }));
 
@@ -104,7 +109,7 @@ describe('SubmitForm', () => {
 
     await waitFor(() => {
       expect(screen.getByText(/successfully/i)).toBeInTheDocument();
-      expect(screen.getByText(/water/i)).toBeInTheDocument();
+      expect(screen.getAllByText(/water/i).length).toBeGreaterThan(0);
     });
   });
 

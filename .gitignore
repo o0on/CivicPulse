@@ -23,6 +23,12 @@ var/
 .venv
 venv/
 ENV/
+.coverage
+.coverage.*
+coverage.xml
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
 
 # Node
 node_modules/

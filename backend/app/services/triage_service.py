@@ -1,10 +1,13 @@
+import asyncio
+import hashlib
 import json
 import time
-import hashlib
+
 from redis.asyncio import Redis
+
 from app.providers.triage.base import TriageProvider, TriageResult
 from app.providers.triage.rules import RuleBasedTriage
-import asyncio
+
 
 class TriageService:
     def __init__(self, provider: TriageProvider, redis: Redis, rules_fallback: RuleBasedTriage):

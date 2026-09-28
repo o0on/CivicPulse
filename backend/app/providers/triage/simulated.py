@@ -1,6 +1,8 @@
 import hashlib
-from app.providers.triage.base import TriageProvider, TriageResult
+
 from app.models import Category, Priority
+from app.providers.triage.base import TriageResult
+
 
 class SimulatedTriage:
     name: str = "simulated"
@@ -10,7 +12,7 @@ class SimulatedTriage:
         self.error_after_attempts = error_after_attempts
         self.attempts = 0
 
-    async def triage(self, text: str, location: str) -> TriageResult:
+    async def triage(self, text: str, location: str = "") -> TriageResult:
         self.attempts += 1
         
         if self.inject_error:

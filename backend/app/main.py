@@ -1,17 +1,20 @@
-import uuid
 import signal
+import uuid
 from contextlib import asynccontextmanager
+
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
+
 from app.core.config import settings
 from app.core.logging import configure_logging
-from app.core.redis import init_redis, close_redis
+from app.core.redis import close_redis, init_redis
 from app.providers.triage.factory import create_triage_provider
 from app.routes.complaints import router as complaints_router
-from app.routes.stats import router as stats_router
 from app.routes.meta import router as meta_router
 from app.routes.metrics import router as metrics_router
+from app.routes.stats import router as stats_router
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):

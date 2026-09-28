@@ -1,8 +1,16 @@
 import json
+
 import httpx
-from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception_type
-from app.providers.triage.base import TriageProvider, TriageResult
+from tenacity import (
+    retry,
+    retry_if_exception_type,
+    stop_after_attempt,
+    wait_exponential,
+)
+
+from app.providers.triage.base import TriageResult
 from app.providers.triage.llm import TriageError
+
 
 class OllamaTriage:
     name: str = "llm:ollama"

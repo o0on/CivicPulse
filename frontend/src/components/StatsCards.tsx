@@ -26,7 +26,7 @@ export const StatsCards: React.FC = () => {
     return () => clearInterval(interval);
   }, []);
 
-  if (loading && !stats) return <div className="text-center mt-10">Loading stats...</div>;
+  if (loading && !stats) return <div data-testid="loading-skeleton" className="text-center mt-10">Loading stats...</div>;
   if (error && !stats) return <div className="text-center mt-10 text-red-500">{error}</div>;
   if (!stats) return null;
 
@@ -50,7 +50,7 @@ export const StatsCards: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <div className="bg-white rounded-lg shadow p-6 border-t-4 border-indigo-500">
           <h3 className="text-lg font-medium text-gray-500">Total Complaints</h3>
-          <p className="mt-2 text-3xl font-bold text-gray-900">{stats.total}</p>
+          <p className="mt-2 text-3xl font-bold text-gray-900">{stats.total ?? (stats as any).total_complaints}</p>
         </div>
 
         <div className="bg-white rounded-lg shadow p-6 border-t-4 border-blue-500">

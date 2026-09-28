@@ -1,9 +1,12 @@
-from enum import Enum
-from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
-from sqlalchemy import String, Integer, DateTime, func, MetaData
-from sqlalchemy.dialects.postgresql import UUID, ENUM as PG_ENUM
 import uuid
 from datetime import datetime
+from enum import Enum
+
+from sqlalchemy import DateTime, Integer, MetaData, String, func
+from sqlalchemy.dialects.postgresql import ENUM as PG_ENUM
+from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
+
 
 class Category(str, Enum):
     water = "water"

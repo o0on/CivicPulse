@@ -1,19 +1,26 @@
-from fastapi import APIRouter, Depends, Request, Query
 from uuid import UUID
+
+from fastapi import APIRouter, Depends, Query, Request
 from redis.asyncio import Redis
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.schemas import ComplaintCreate, ComplaintResponse, ComplaintListResponse, StatusUpdate
-from app.models import ComplaintStatus, Category, Priority
+
+from app.core.config import settings
 from app.core.database import get_db
 from app.core.redis import get_redis
-from app.core.config import settings
-from app.repositories.complaint_repository import ComplaintRepository
-from app.services.triage_service import TriageService
-from app.services.rate_limiter import RateLimiter
-from app.services.stats_service import StatsService
-from app.services.complaint_service import ComplaintService
+from app.models import Category, ComplaintStatus, Priority
 from app.providers.triage.factory import create_triage_provider
 from app.providers.triage.rules import RuleBasedTriage
+from app.repositories.complaint_repository import ComplaintRepository
+from app.schemas import (
+    ComplaintCreate,
+    ComplaintListResponse,
+    ComplaintResponse,
+    StatusUpdate,
+)
+from app.services.complaint_service import ComplaintService
+from app.services.rate_limiter import RateLimiter
+from app.services.stats_service import StatsService
+from app.services.triage_service import TriageService
 
 router = APIRouter(tags=["complaints"])
 
@@ -45,7 +52,17 @@ async def list_complaints(
     page_size: int = Query(20, ge=1, le=100),
     service: ComplaintService = Depends(get_complaint_service)
 ):
-    return await service.list_complaints(status, category, priority, page, page_size)
+    res = await service.list_complaints(status, category, priority, page, page_size)
+    if isinstance(res, tuple):
+        items, total = res
+        return ComplaintListResponse(
+            items=items,
+            total=total,
+            page=page,
+            page_size=page_size,
+            total_pages=(total + page_size - 1) // page_size if page_size else 0,
+        )
+    return res
 
 @router.get("/complaints/{complaint_id}", response_model=ComplaintResponse)
 async def get_complaint(

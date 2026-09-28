@@ -1,12 +1,13 @@
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+
 class Settings(BaseSettings):
     APP_NAME: str = "CivicPulse"
     APP_VERSION: str = "1.0.0"
     DEBUG: bool = False
-    DATABASE_URL: str
-    REDIS_URL: str
-    SECRET_KEY: str
+    DATABASE_URL: str = "postgresql+asyncpg://civicpulse:civicpulse_dev@postgres:5432/civicpulse"
+    REDIS_URL: str = "redis://redis:6379/0"
+    SECRET_KEY: str = "dev-secret-key-civicpulse-development-only"
     CORS_ORIGINS: list[str] = ["http://frontend:3000"]
     TRIAGE_PROVIDER: str = "rules"
     GROQ_API_KEY: str = ""

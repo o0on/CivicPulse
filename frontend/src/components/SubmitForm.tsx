@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { api } from '../api/client';
-import { Complaint, ApiError } from '../types';
+import { Complaint } from '../types';
 
 export const SubmitForm: React.FC = () => {
   const [text, setText] = useState('');
@@ -15,8 +15,8 @@ export const SubmitForm: React.FC = () => {
 
   const validate = () => {
     const errs: { text?: string, location?: string } = {};
-    if (text.length < 10 || text.length > 2000) errs.text = 'Text must be between 10 and 2000 characters.';
-    if (location.length < 3 || location.length > 200) errs.location = 'Location must be between 3 and 200 characters.';
+    if (text.length < 10 || text.length > 2000) errs.text = 'Text must be at least 10 characters (max 2000).';
+    if (location.length < 3 || location.length > 200) errs.location = 'Location must be at least 3 characters (max 200).';
     setValidationErrors(errs);
     return Object.keys(errs).length === 0;
   };
@@ -31,11 +31,12 @@ export const SubmitForm: React.FC = () => {
       const res = await api.complaints.create({
         text,
         location,
-        reporter_contact: contact ? contact : undefined,
+        reporter_contact: contact || '',
       });
       setResult(res);
     } catch (err: any) {
-      setError((err as ApiError).detail || 'An unknown error occurred');
+      const msg = err?.response?.data?.detail || err?.detail || (typeof err === 'string' ? err : err?.message) || 'An unknown error occurred';
+      setError(msg);
     } finally {
       setLoading(false);
     }

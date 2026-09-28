@@ -1,9 +1,10 @@
 from app.core.config import settings
 from app.providers.triage.base import TriageProvider
-from app.providers.triage.rules import RuleBasedTriage
 from app.providers.triage.llm import LLMTriage
 from app.providers.triage.ollama import OllamaTriage
+from app.providers.triage.rules import RuleBasedTriage
 from app.providers.triage.simulated import SimulatedTriage
+
 
 def create_triage_provider() -> TriageProvider:
     provider = settings.TRIAGE_PROVIDER

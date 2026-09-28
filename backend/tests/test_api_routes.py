@@ -10,10 +10,8 @@ def test_client():
     return AsyncClient(transport=transport, base_url="http://testserver")
 
 @pytest.mark.asyncio
-@patch("app.main.db_session", new_callable=lambda: None) # Mock DB session dependency
-async def test_health_endpoint_200(mock_db, test_client):
+async def test_health_endpoint_200(test_client):
     response = await test_client.get("/health")
-    # Health endpoint shouldn't require DB but if it does, mock keeps it safe
     assert response.status_code == 200
 
 @pytest.mark.asyncio

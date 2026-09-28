@@ -1,11 +1,12 @@
 from fastapi import APIRouter, Depends, Response
 from redis.asyncio import Redis
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.schemas import StatsResponse
+
+from app.core.config import settings
 from app.core.database import get_db
 from app.core.redis import get_redis
-from app.core.config import settings
 from app.repositories.complaint_repository import ComplaintRepository
+from app.schemas import StatsResponse
 from app.services.stats_service import StatsService
 
 router = APIRouter(tags=["stats"])

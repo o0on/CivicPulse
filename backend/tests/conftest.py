@@ -52,3 +52,19 @@ def mock_redis():
 def mock_repo():
     repo = AsyncMock()
     return repo
+
+from app.core.database import get_db
+from app.core.redis import get_redis
+
+@pytest.fixture(autouse=True)
+def override_test_dependencies(mock_redis):
+    mock_db_session = AsyncMock()
+    async def _mock_get_db():
+        yield mock_db_session
+    async def _mock_get_redis():
+        yield mock_redis
+
+    app.dependency_overrides[get_db] = _mock_get_db
+    app.dependency_overrides[get_redis] = _mock_get_redis
+    yield
+    app.dependency_overrides.clear()
