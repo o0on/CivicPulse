@@ -67,3 +67,6 @@ When external LLM APIs fail, the triage service automatically falls back to dete
 
 ### Database Vacuum and Index Maintenance
 Periodic ANALYZE and REINDEX operations maintain query performance across composite status/priority indexes.
+
+### Redis AOF Persistence Recovery
+Redis AOF rewrite occurs automatically to compact append-only logs while preserving cache state.
