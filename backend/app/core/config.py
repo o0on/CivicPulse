@@ -12,7 +12,7 @@ class Settings(BaseSettings):
     GROQ_API_KEY: str = ""
     GEMINI_API_KEY: str = ""
     OLLAMA_BASE_URL: str = "http://ollama:11434"
-    RATE_LIMIT_REQUESTS: int = 10
+    RATE_LIMIT_REQUESTS: int = 25
     RATE_LIMIT_WINDOW_SECONDS: int = 60
     STATS_CACHE_TTL: int = 30
     LOG_LEVEL: str = "INFO"
