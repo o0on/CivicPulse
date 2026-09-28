@@ -35,6 +35,15 @@ if settings.LOG_LEVEL != "DEBUG":
     app.add_middleware(TrustedHostMiddleware, allowed_hosts=["*"])
 
 @app.middleware("http")
+async def add_timing_header(request: Request, call_next):
+    import time
+    start = time.perf_counter()
+    response = await call_next(request)
+    process_time = int((time.perf_counter() - start) * 1000)
+    response.headers["X-Response-Time-Ms"] = str(process_time)
+    return response
+
+@app.middleware("http")
 async def request_id_middleware(request: Request, call_next):
     req_id = request.headers.get("X-Request-ID")
     if not req_id:
