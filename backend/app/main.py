@@ -58,7 +58,9 @@ async def request_id_middleware(request: Request, call_next):
 app.include_router(complaints_router, prefix="/api")
 app.include_router(stats_router, prefix="/api")
 app.include_router(meta_router)
+app.include_router(meta_router, prefix="/api")
 app.include_router(metrics_router, prefix="/api")
+app.include_router(metrics_router)
 
 def handle_sigterm(signum, frame):
     pass
