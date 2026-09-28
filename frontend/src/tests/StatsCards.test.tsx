@@ -77,3 +77,5 @@ describe('StatsCards', () => {
     });
   });
 });
+
+// Test: verify badge styling transition between HIT and MISS

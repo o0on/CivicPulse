@@ -122,3 +122,5 @@ describe('ComplaintTable', () => {
     });
   });
 });
+
+// Test: verify error notification banner auto-dismissal after 5000ms

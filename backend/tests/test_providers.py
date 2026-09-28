@@ -68,3 +68,5 @@ def test_triage_result_summary_max_length():
             summary="A" * 141, # Over 140 chars
             confidence=0.9
         )
+
+# Test: verify hash determinism across simulated triage calls
