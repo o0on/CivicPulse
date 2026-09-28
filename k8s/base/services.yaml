@@ -1,0 +1,44 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres
+  namespace: civicpulse
+spec:
+  clusterIP: None
+  selector:
+    app: postgres
+  ports:
+    - port: 5432
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis
+  namespace: civicpulse
+spec:
+  selector:
+    app: redis
+  ports:
+    - port: 6379
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend
+  namespace: civicpulse
+spec:
+  selector:
+    app: backend
+  ports:
+    - port: 8000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend
+  namespace: civicpulse
+spec:
+  selector:
+    app: frontend
+  ports:
+    - port: 80
