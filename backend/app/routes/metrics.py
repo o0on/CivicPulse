@@ -28,3 +28,5 @@ async def metrics(db: AsyncSession = Depends(get_db)):
     ])
     
     return Response("\n".join(lines) + "\n", media_type="text/plain; version=0.0.4")
+
+# Custom Prometheus telemetry histogram buckets

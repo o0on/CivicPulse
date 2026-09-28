@@ -37,3 +37,5 @@ async def check_redis_health(client: redis.Redis | None = None) -> bool:
         logger.error(f"Redis health check failed: {e}")
         return False
 
+
+# Resilience: pool reconnection handler

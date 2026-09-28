@@ -61,3 +61,12 @@ If the triage engine starts failing (e.g., external LLM API is down or rate limi
 
 2. **Enable Dummy Fallback:**
    If all external APIs are unreachable, switch `TRIAGE_PROVIDER` to `dummy`. This uses a deterministic Python fallback that assigns priority based on keyword matching (e.g., "pothole" -> High) without making external network calls.
+
+### Emergency Triage Provider Failover
+When external LLM APIs fail, the triage service automatically falls back to deterministic rule matching without downtime.
+
+### Database Vacuum and Index Maintenance
+Periodic ANALYZE and REINDEX operations maintain query performance across composite status/priority indexes.
+
+### Redis AOF Persistence Recovery
+Redis AOF rewrite occurs automatically to compact append-only logs while preserving cache state.

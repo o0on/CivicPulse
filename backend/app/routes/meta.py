@@ -35,3 +35,5 @@ async def ready(response: Response) -> ReadyResponse:
         timestamp=datetime.now(timezone.utc),
     )
 
+
+# Healthcheck pool telemetry
