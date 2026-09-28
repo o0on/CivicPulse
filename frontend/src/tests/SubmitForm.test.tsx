@@ -123,3 +123,5 @@ describe('SubmitForm', () => {
     });
   });
 });
+
+// Test: verify real-time character count validation feedback
