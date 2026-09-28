@@ -74,3 +74,5 @@ async def test_rate_limit_key_format(mock_redis):
     
     key_used = mock_redis.incr.call_args[0][0]
     assert "10.0.0.5" in key_used
+
+# Test: verify rate limit sliding window precision
