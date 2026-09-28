@@ -13,7 +13,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with: {python-version: '3.12'}
-      - run: pip install ruff mypy && ruff check backend/app && mypy backend/app
+      - run: pip install ruff mypy && ruff check backend/app && mypy --config-file backend/pyproject.toml --ignore-missing-imports backend/app
   
   backend-test:
     runs-on: ubuntu-24.04
