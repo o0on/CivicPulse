@@ -5,8 +5,10 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
+from sqlalchemy import text
 
 from app.core.config import settings
+from app.core.database import engine
 from app.core.logging import configure_logging
 from app.core.redis import close_redis, init_redis
 from app.providers.triage.factory import create_triage_provider
@@ -21,6 +23,50 @@ async def lifespan(app: FastAPI):
     configure_logging(settings.LOG_LEVEL)
     await init_redis()
     app.state.triage_provider = create_triage_provider()
+    try:
+        async with engine.begin() as conn:
+            await conn.execute(
+                text(
+                    "DO $$ BEGIN CREATE TYPE category_enum AS ENUM "
+                    "('water', 'electricity', 'sanitation', 'roads', 'streetlights', 'other'); "
+                    "EXCEPTION WHEN duplicate_object THEN null; END $$;"
+                )
+            )
+            await conn.execute(
+                text(
+                    "DO $$ BEGIN CREATE TYPE priority_enum AS ENUM "
+                    "('high', 'normal', 'low'); "
+                    "EXCEPTION WHEN duplicate_object THEN null; END $$;"
+                )
+            )
+            await conn.execute(
+                text(
+                    "DO $$ BEGIN CREATE TYPE status_enum AS ENUM "
+                    "('open', 'in_progress', 'resolved', 'rejected'); "
+                    "EXCEPTION WHEN duplicate_object THEN null; END $$;"
+                )
+            )
+            await conn.execute(
+                text(
+                    "CREATE TABLE IF NOT EXISTS complaints ("
+                    "id UUID PRIMARY KEY DEFAULT gen_random_uuid(), "
+                    "text VARCHAR(2000) NOT NULL CHECK (char_length(text) >= 10), "
+                    "location VARCHAR(200) NOT NULL CHECK (char_length(location) >= 3), "
+                    "reporter_contact VARCHAR(255), "
+                    "category category_enum NOT NULL, "
+                    "priority priority_enum NOT NULL, "
+                    "status status_enum NOT NULL DEFAULT 'open', "
+                    "ai_summary VARCHAR(140), "
+                    "triaged_by VARCHAR(32), "
+                    "triage_latency_ms INTEGER NOT NULL, "
+                    "created_at TIMESTAMPTZ NOT NULL DEFAULT now(), "
+                    "updated_at TIMESTAMPTZ NOT NULL DEFAULT now());"
+                )
+            )
+            await conn.execute(text("CREATE INDEX IF NOT EXISTS idx_complaints_status_priority ON complaints (status, priority);"))
+            await conn.execute(text("CREATE INDEX IF NOT EXISTS idx_complaints_created_at_desc ON complaints (created_at DESC);"))
+    except Exception:
+        pass
     yield
     await close_redis()
 
