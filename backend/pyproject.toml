@@ -1,0 +1,18 @@
+[tool.ruff]
+line-length = 88
+select = ["E", "F", "I", "N", "UP", "ANN"]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+
+[tool.coverage.run]
+source = ["app"]
+omit = ["*/tests/*", "alembic/*"]
+
+[tool.coverage.report]
+fail_under = 65
