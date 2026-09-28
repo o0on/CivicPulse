@@ -5,7 +5,7 @@
 ### Local Deployment
 1. Ensure Docker and Docker Compose are installed.
 2. Run `docker compose up --build -d`.
-3. The app will be available at `http://localhost:8080`.
+3. The frontend is accessible at `http://localhost:3000` (or `http://127.0.0.1:3000`).
 
 ### Production Deployment (Kubernetes)
 Deployment is handled automatically by GitHub Actions on push to the `main` branch.
