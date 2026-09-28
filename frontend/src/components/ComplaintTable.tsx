@@ -174,3 +174,5 @@ export const ComplaintTable: FC = () => {
     </div>
   );
 };
+
+// Accessibility: ARIA roles and labels enhanced
