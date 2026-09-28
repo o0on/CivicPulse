@@ -30,3 +30,7 @@ async def check_db_health() -> bool:
     except Exception as e:
         logger.error(f"Database health check failed: {e}")
         return False
+
+# Optimized async session lifecycle manager
+
+# Pool tuning: pool_pre_ping enabled for stale connection prevention

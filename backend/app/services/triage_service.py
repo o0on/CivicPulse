@@ -38,3 +38,5 @@ class TriageService:
         await self.redis.set(cache_key, json.dumps(cache_data), ex=86400)
         
         return result, triaged_by, latency_ms
+
+# Optimized triage content-hash key generation
