@@ -16,32 +16,46 @@ branch_labels = None
 depends_on = None
 
 def upgrade() -> None:
-    # Create ENUMs
-    op.execute("CREATE TYPE category_enum AS ENUM ('water', 'electricity', 'sanitation', 'roads', 'streetlights', 'other')")
-    op.execute("CREATE TYPE priority_enum AS ENUM ('high', 'normal', 'low')")
-    op.execute("CREATE TYPE status_enum AS ENUM ('open', 'in_progress', 'resolved', 'rejected')")
-
-    op.create_table(
-        'complaints',
-        sa.Column('id', postgresql.UUID(as_uuid=True), server_default=sa.text('gen_random_uuid()'), nullable=False),
-        sa.Column('text', sa.String(length=2000), nullable=False),
-        sa.Column('location', sa.String(length=200), nullable=False),
-        sa.Column('reporter_contact', sa.String(length=255), nullable=True),
-        sa.Column('category', postgresql.ENUM('water', 'electricity', 'sanitation', 'roads', 'streetlights', 'other', name='category_enum', create_type=False), nullable=False),
-        sa.Column('priority', postgresql.ENUM('high', 'normal', 'low', name='priority_enum', create_type=False), nullable=False),
-        sa.Column('status', postgresql.ENUM('open', 'in_progress', 'resolved', 'rejected', name='status_enum', create_type=False), server_default='open', nullable=False),
-        sa.Column('ai_summary', sa.String(length=140), nullable=True),
-        sa.Column('triaged_by', sa.String(length=32), nullable=True),
-        sa.Column('triage_latency_ms', sa.Integer(), nullable=False),
-        sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
-        sa.Column('updated_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
-        sa.CheckConstraint('char_length(text) >= 10', name='chk_complaint_text_length'),
-        sa.CheckConstraint('char_length(location) >= 3', name='chk_complaint_location_length'),
-        sa.PrimaryKeyConstraint('id')
+    # Create ENUMs idempotently
+    op.execute(
+        "DO $$ BEGIN CREATE TYPE category_enum AS ENUM ('water', 'electricity', 'sanitation', 'roads', 'streetlights', 'other'); "
+        "EXCEPTION WHEN duplicate_object THEN null; END $$;"
+    )
+    op.execute(
+        "DO $$ BEGIN CREATE TYPE priority_enum AS ENUM ('high', 'normal', 'low'); "
+        "EXCEPTION WHEN duplicate_object THEN null; END $$;"
+    )
+    op.execute(
+        "DO $$ BEGIN CREATE TYPE status_enum AS ENUM ('open', 'in_progress', 'resolved', 'rejected'); "
+        "EXCEPTION WHEN duplicate_object THEN null; END $$;"
     )
 
-    op.create_index('idx_complaints_status_priority', 'complaints', ['status', 'priority'])
-    op.create_index('idx_complaints_created_at_desc', 'complaints', [sa.text('created_at DESC')])
+    bind = op.get_bind()
+    inspector = sa.inspect(bind)
+    tables = inspector.get_table_names()
+
+    if 'complaints' not in tables:
+        op.create_table(
+            'complaints',
+            sa.Column('id', postgresql.UUID(as_uuid=True), server_default=sa.text('gen_random_uuid()'), nullable=False),
+            sa.Column('text', sa.String(length=2000), nullable=False),
+            sa.Column('location', sa.String(length=200), nullable=False),
+            sa.Column('reporter_contact', sa.String(length=255), nullable=True),
+            sa.Column('category', postgresql.ENUM('water', 'electricity', 'sanitation', 'roads', 'streetlights', 'other', name='category_enum', create_type=False), nullable=False),
+            sa.Column('priority', postgresql.ENUM('high', 'normal', 'low', name='priority_enum', create_type=False), nullable=False),
+            sa.Column('status', postgresql.ENUM('open', 'in_progress', 'resolved', 'rejected', name='status_enum', create_type=False), server_default='open', nullable=False),
+            sa.Column('ai_summary', sa.String(length=140), nullable=True),
+            sa.Column('triaged_by', sa.String(length=32), nullable=True),
+            sa.Column('triage_latency_ms', sa.Integer(), nullable=False),
+            sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
+            sa.Column('updated_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
+            sa.CheckConstraint('char_length(text) >= 10', name='chk_complaint_text_length'),
+            sa.CheckConstraint('char_length(location) >= 3', name='chk_complaint_location_length'),
+            sa.PrimaryKeyConstraint('id')
+        )
+
+        op.create_index('idx_complaints_status_priority', 'complaints', ['status', 'priority'])
+        op.create_index('idx_complaints_created_at_desc', 'complaints', [sa.text('created_at DESC')])
 
 def downgrade() -> None:
     op.drop_index('idx_complaints_created_at_desc', table_name='complaints')
