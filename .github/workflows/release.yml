@@ -1,0 +1,25 @@
+name: Release
+on:
+  push:
+    tags: ['v*']
+
+jobs:
+  create-release:
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
+      - name: Tag release images
+        run: |
+          docker pull ghcr.io/${{ github.repository_owner }}/civicpulse-backend:${{ github.sha }}
+          docker tag ghcr.io/${{ github.repository_owner }}/civicpulse-backend:${{ github.sha }}             ghcr.io/${{ github.repository_owner }}/civicpulse-backend:${{ github.ref_name }}
+          docker push ghcr.io/${{ github.repository_owner }}/civicpulse-backend:${{ github.ref_name }}
+          docker pull ghcr.io/${{ github.repository_owner }}/civicpulse-frontend:${{ github.sha }}
+          docker tag ghcr.io/${{ github.repository_owner }}/civicpulse-frontend:${{ github.sha }}             ghcr.io/${{ github.repository_owner }}/civicpulse-frontend:${{ github.ref_name }}
+          docker push ghcr.io/${{ github.repository_owner }}/civicpulse-frontend:${{ github.ref_name }}
