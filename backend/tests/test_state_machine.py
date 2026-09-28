@@ -54,3 +54,5 @@ def test_409_message_contains_transition(mock_repo):
     assert exc_info.value.status_code == 409
     assert "open" in error_msg
     assert "resolved" in error_msg
+
+# Test: verify terminal state immutability for resolved and rejected
