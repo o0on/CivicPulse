@@ -9,3 +9,5 @@ export const DashboardPage: React.FC = () => {
     </div>
   );
 };
+
+// Layout: responsive container wrapper
