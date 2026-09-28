@@ -1,0 +1,109 @@
+name: CI
+on:
+  push:
+    branches: [dev, main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  backend-lint:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12'}
+      - run: pip install ruff mypy && ruff check backend/app && mypy --config-file backend/pyproject.toml --ignore-missing-imports backend/app
+  
+  backend-test:
+    runs-on: ubuntu-24.04
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env: {POSTGRES_DB: civicpulse_test, POSTGRES_USER: test, POSTGRES_PASSWORD: test}
+        ports: ['5432:5432']
+        options: --health-cmd pg_isready --health-interval 10s
+      redis:
+        image: redis:7-alpine
+        ports: ['6379:6379']
+        options: --health-cmd "redis-cli ping" --health-interval 10s
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12'}
+      - name: Install dependencies
+        run: pip install -r backend/requirements.txt pytest-cov pytest-asyncio
+      - name: Run tests with coverage
+        env:
+          DATABASE_URL: postgresql+asyncpg://test:test@localhost:5432/civicpulse_test
+          REDIS_URL: redis://localhost:6379/0
+          TRIAGE_PROVIDER: simulated
+          SECRET_KEY: test-secret-key-for-ci
+        run: |
+          cd backend
+          pytest tests/ --cov=app --cov-report=xml --cov-fail-under=65
+  
+  frontend-lint:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: {node-version: '20'}
+      - run: cd frontend && npm ci && npm run lint && npx tsc --noEmit
+  
+  frontend-test:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: {node-version: '20'}
+      - run: cd frontend && npm ci && npm test
+  
+  security-scan:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run Trivy scan
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: fs
+          scan-ref: .
+          severity: CRITICAL,HIGH
+          exit-code: 1
+  
+  validate-manifests:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install kubeconform
+        run: |
+          curl -L https://github.com/yannh/kubeconform/releases/download/v0.6.7/kubeconform-linux-amd64.tar.gz | tar xz
+          sudo mv kubeconform /usr/local/bin/
+      - name: Validate K8s manifests
+        run: |
+          find k8s/base -name '*.yaml' ! -name 'kustomization.yaml' | xargs kubeconform -strict -ignore-missing-schemas -kubernetes-version 1.30.0
+  
+  integration-test:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build and start services
+        run: |
+          cp .env.example .env
+          docker compose up -d --build
+          sleep 30
+      - name: Wait for health
+        run: |
+          timeout 60 bash -c 'until curl -sf http://localhost:3000/health; do sleep 2; done'
+      - name: Smoke test API
+        run: |
+          curl -sf http://localhost:3000/api/health
+          curl -sf http://localhost:3000/api/ready
+          curl -sf -X POST http://localhost:3000/api/complaints             -H 'Content-Type: application/json'             -d '{"text":"Water main burst on main road flooding the area","location":"Block 5 Gulshan"}'
+      - name: Verify network isolation
+        run: |
+          # Frontend should NOT be able to reach postgres
+          docker compose exec -T frontend ping -c 1 postgres && exit 1 || echo 'Network isolation verified'
+      - name: Cleanup
+        if: always()
+        run: docker compose down -v
