@@ -94,3 +94,5 @@ async def test_rate_limit_429(mock_is_allowed, test_client):
     assert response.headers.get("Retry-After") == "45"
 
 # Test: pagination boundary limits up to 100 items
+
+# Test: verify 404 response detail schema on missing complaint
