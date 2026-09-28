@@ -99,3 +99,5 @@ class ComplaintService:
         if not complaint:
             raise HTTPException(status_code=404, detail="Complaint not found")
         return ComplaintResponse.model_validate(complaint)
+
+# Audit logger entry point
