@@ -1,0 +1,115 @@
+name: CD
+on:
+  push:
+    branches: [main]
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build and push backend
+        uses: docker/build-push-action@v6
+        with:
+          context: ./backend
+          push: true
+          tags: |
+            ghcr.io/${{ github.repository_owner }}/civicpulse-backend:${{ github.sha }}
+      - name: Build and push frontend
+        uses: docker/build-push-action@v6
+        with:
+          context: ./frontend
+          push: true
+          tags: |
+            ghcr.io/${{ github.repository_owner }}/civicpulse-frontend:${{ github.sha }}
+
+  deploy-staging:
+    needs: build-and-push
+    runs-on: ubuntu-24.04
+    permissions:
+      packages: read
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install kind
+        run: |
+          curl -Lo ./kind https://kind.sigs.k8s.io/dl/v0.24.0/kind-linux-amd64
+          chmod +x ./kind && sudo mv ./kind /usr/local/bin/kind
+      - name: Install kubectl
+        run: |
+          curl -LO https://dl.k8s.io/release/v1.30.0/bin/linux/amd64/kubectl
+          chmod +x kubectl && sudo mv kubectl /usr/local/bin/
+      - name: Install kustomize
+        run: |
+          curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh" | bash
+          sudo mv kustomize /usr/local/bin/
+      - name: Create kind cluster
+        run: kind create cluster --name civicpulse-staging
+      - name: Login to GHCR and load images into kind
+        run: |
+          echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+          docker pull ghcr.io/${{ github.repository_owner }}/civicpulse-backend:${{ github.sha }}
+          docker pull ghcr.io/${{ github.repository_owner }}/civicpulse-frontend:${{ github.sha }}
+          kind load docker-image ghcr.io/${{ github.repository_owner }}/civicpulse-backend:${{ github.sha }} --name civicpulse-staging
+          kind load docker-image ghcr.io/${{ github.repository_owner }}/civicpulse-frontend:${{ github.sha }} --name civicpulse-staging
+      - name: Create namespace and secrets
+        run: |
+          kubectl create namespace civicpulse
+          kubectl create secret generic civicpulse-secrets \
+            --namespace civicpulse \
+            --from-literal=DATABASE_URL=postgresql+asyncpg://civicpulse:staging@postgres.civicpulse.svc.cluster.local:5432/civicpulse \
+            --from-literal=REDIS_URL=redis://redis.civicpulse.svc.cluster.local:6379/0 \
+            --from-literal=SECRET_KEY=${{ secrets.STAGING_SECRET_KEY }} \
+            --from-literal=GROQ_API_KEY=${{ secrets.GROQ_API_KEY }} \
+            --from-literal=GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }} \
+            --from-literal=POSTGRES_USER=civicpulse \
+            --from-literal=POSTGRES_PASSWORD=staging
+      - name: Deploy with Kustomize (dev overlay - 1 replica)
+        run: |
+          cd k8s/overlays/dev
+          kustomize edit set image \
+            ghcr.io/YOUR_ORG/civicpulse-backend=ghcr.io/${{ github.repository_owner }}/civicpulse-backend:${{ github.sha }} \
+            ghcr.io/YOUR_ORG/civicpulse-frontend=ghcr.io/${{ github.repository_owner }}/civicpulse-frontend:${{ github.sha }}
+          kubectl apply -k .
+      - name: Wait for PostgreSQL
+        run: |
+          kubectl rollout status statefulset/postgres -n civicpulse --timeout=120s
+          kubectl wait pod -n civicpulse -l app=postgres --for=condition=ready --timeout=120s
+      - name: Wait for Redis
+        run: |
+          kubectl rollout status deployment/redis -n civicpulse --timeout=120s
+          kubectl wait pod -n civicpulse -l app=redis --for=condition=ready --timeout=120s
+      - name: Wait for rollout
+        run: |
+          kubectl rollout status deployment/backend -n civicpulse --timeout=180s || {
+            echo "=== Pods ==="
+            kubectl get pods -n civicpulse -o wide
+            echo "=== Events ==="
+            kubectl get events -n civicpulse --sort-by='.metadata.creationTimestamp'
+            echo "=== Backend logs ==="
+            kubectl logs -n civicpulse -l app=backend --tail=100 --all-containers=true
+            echo "=== Postgres logs ==="
+            kubectl logs -n civicpulse statefulset/postgres --tail=50
+            exit 1
+          }
+          kubectl rollout status deployment/frontend -n civicpulse --timeout=180s || {
+            echo "=== Frontend logs ==="
+            kubectl logs -n civicpulse -l app=frontend --tail=100
+            exit 1
+          }
+      - name: Run database migrations
+        run: |
+          kubectl exec -n civicpulse deployment/backend -- alembic upgrade head
+      - name: Smoke test
+        run: |
+          kubectl port-forward svc/backend 8000:8000 -n civicpulse &
+          sleep 5
+          curl -sf http://localhost:8000/health
+          curl -sf http://localhost:8000/ready
