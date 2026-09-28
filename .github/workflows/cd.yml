@@ -106,7 +106,7 @@ jobs:
           }
       - name: Run database migrations
         run: |
-          kubectl exec -n civicpulse deployment/backend -- alembic upgrade head
+          kubectl exec -n civicpulse deployment/backend -- /bin/sh -c "cd /app && alembic upgrade head"
       - name: Smoke test
         run: |
           kubectl port-forward svc/backend 8000:8000 -n civicpulse &

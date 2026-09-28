@@ -65,6 +65,16 @@ If the triage engine starts failing (e.g., external LLM API is down or rate limi
 ### Emergency Triage Provider Failover
 When external LLM APIs fail, the triage service automatically falls back to deterministic rule matching without downtime.
 
+### Database Migrations
+Database schema updates are managed using Alembic. To manually run or inspect migrations inside Kubernetes:
+```bash
+# Apply pending migrations
+kubectl exec -n civicpulse deployment/backend -- /bin/sh -c "cd /app && alembic upgrade head"
+
+# Verify current revision
+kubectl exec -n civicpulse deployment/backend -- /bin/sh -c "cd /app && alembic current"
+```
+
 ### Database Vacuum and Index Maintenance
 Periodic ANALYZE and REINDEX operations maintain query performance across composite status/priority indexes.
 
