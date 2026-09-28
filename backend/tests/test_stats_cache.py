@@ -70,3 +70,5 @@ async def test_cache_response_has_cached_flag(mock_redis, mock_repo):
     
     assert is_cached_1 is False
     assert is_cached_2 is True
+
+# Test: verify stats cache invalidation trigger on status transition
