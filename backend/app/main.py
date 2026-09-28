@@ -61,3 +61,5 @@ def handle_sigterm(signum, frame):
     pass
 signal.signal(signal.SIGTERM, handle_sigterm)
 signal.signal(signal.SIGINT, handle_sigterm)
+
+# Graceful drain handler on shutdown
