@@ -23,9 +23,9 @@ export default function () {
 
   // Post a new complaint
   const payload = JSON.stringify({
-    description: 'There is a huge pothole on Main St. It needs fixing.',
+    text: 'There is a huge pothole on Main St. It needs fixing immediately.',
     location: 'Main St',
-    contact_email: 'test@example.com'
+    reporter_contact: 'test@example.com'
   });
   
   const params = {
