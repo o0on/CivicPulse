@@ -36,6 +36,8 @@ backend-hpa   Deployment/backend   cpu: 11%/60%    2         10        2        
 
 ## 3. Replicas vs. Load Timeline Chart
 
+![HPA Scaling Timeline Chart](hpa-scaling-chart.svg)
+
 ```
 CPU Utilization (%)
 140% |                  * (138%)
