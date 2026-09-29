@@ -16,6 +16,7 @@ class TriageError(Exception):
 
 class LLMTriage:
     def __init__(self, provider: str, api_key: str, model: str, base_url: str | None = None):
+        self.provider = provider
         self.name = f"llm:{provider}"
         self.api_key = api_key
         self.model = model
@@ -43,6 +44,27 @@ Respond ONLY with valid JSON:
   "priority": "high|normal|low",
   "summary": "<max 140 chars>",
   "confidence": 0.0-1.0}}"""
+
+        if self.provider == "gemini":
+            url = f"https://generativelanguage.googleapis.com/v1/models/{self.model}:generateContent?key={self.api_key}"
+            payload = {
+                "contents": [{"parts": [{"text": prompt}]}],
+                "generationConfig": {"responseMimeType": "application/json"}
+            }
+            response = await self.client.post(url, json=payload)
+            if response.status_code == 429 or response.status_code >= 500:
+                response.raise_for_status()
+            elif response.status_code >= 400:
+                raise TriageError(f"Client error: {response.text}")
+            try:
+                data = response.json()
+                raw_text = data["candidates"][0]["content"]["parts"][0]["text"]
+                if raw_text.startswith("```"):
+                    raw_text = raw_text.split("\n", 1)[1].rsplit("```", 1)[0].strip()
+                parsed = json.loads(raw_text)
+                return TriageResult(**parsed)
+            except (KeyError, json.JSONDecodeError, ValueError) as e:
+                raise TriageError(f"Failed to parse LLM response: {e}")
 
         headers = {
             "Authorization": f"Bearer {self.api_key}",

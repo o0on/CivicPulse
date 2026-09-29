@@ -20,7 +20,7 @@ def create_triage_provider() -> TriageProvider:
         return LLMTriage(
             provider="gemini",
             api_key=settings.GEMINI_API_KEY,
-            model="gemini-1.5-flash",
+            model="gemini-3.6-flash",
             base_url="https://generativelanguage.googleapis.com/v1beta/openai/"
         )
     elif provider == "llm:ollama":
