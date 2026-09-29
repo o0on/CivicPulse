@@ -4,7 +4,7 @@ metadata:
   name: civicpulse-config
   namespace: civicpulse
 data:
-  TRIAGE_PROVIDER: "rules"
+  TRIAGE_PROVIDER: "llm:gemini"
   LOG_LEVEL: "INFO"
   RATE_LIMIT_REQUESTS: "10"
   RATE_LIMIT_WINDOW_SECONDS: "60"

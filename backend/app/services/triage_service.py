@@ -11,10 +11,17 @@ from app.providers.triage.rules import RuleBasedTriage
 
 
 class TriageService:
-    def __init__(self, provider: TriageProvider, redis: Redis, rules_fallback: RuleBasedTriage):
+    def __init__(
+        self,
+        provider: TriageProvider,
+        redis: Redis,
+        rules_fallback: RuleBasedTriage,
+        ollama_fallback: TriageProvider | None = None
+    ):
         self.provider = provider
         self.redis = redis
         self.rules_fallback = rules_fallback
+        self.ollama_fallback = ollama_fallback
     
     async def triage_complaint(self, text: str, location: str) -> tuple[TriageResult, str, int]:
         cache_key = f"triage_hash:{hashlib.sha256(f'{text}{location}'.encode()).hexdigest()}"
@@ -29,8 +36,18 @@ class TriageService:
         try:
             result = await asyncio.wait_for(self.provider.triage(text, location), timeout=10.0)
         except Exception:
-            result = await self.rules_fallback.triage(text, location)
-            triaged_by = "rules:fallback"
+            used_ollama = False
+            if self.ollama_fallback and self.provider.name != "llm:ollama":
+                try:
+                    result = await asyncio.wait_for(self.ollama_fallback.triage(text, location), timeout=4.0)
+                    triaged_by = "llm:ollama:fallback"
+                    used_ollama = True
+                except Exception:
+                    used_ollama = False
+
+            if not used_ollama:
+                result = await self.rules_fallback.triage(text, location)
+                triaged_by = "rules:fallback"
             
         latency_ms = int((time.perf_counter() - start) * 1000)
         

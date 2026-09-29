@@ -9,6 +9,7 @@ from app.core.database import get_db
 from app.core.redis import get_redis
 from app.models import Category, ComplaintStatus, Priority
 from app.providers.triage.factory import create_triage_provider
+from app.providers.triage.ollama import OllamaTriage
 from app.providers.triage.rules import RuleBasedTriage
 from app.repositories.complaint_repository import ComplaintRepository
 from app.schemas import (
@@ -28,7 +29,8 @@ def get_complaint_service(db: AsyncSession = Depends(get_db), redis: Redis = Dep
     repo = ComplaintRepository(db)
     provider = create_triage_provider()
     rules = RuleBasedTriage()
-    triage = TriageService(provider, redis, rules)
+    ollama = OllamaTriage(base_url=settings.OLLAMA_BASE_URL) if settings.OLLAMA_BASE_URL else None
+    triage = TriageService(provider, redis, rules, ollama_fallback=ollama)
     limiter = RateLimiter(redis, settings.RATE_LIMIT_REQUESTS, settings.RATE_LIMIT_WINDOW_SECONDS)
     stats = StatsService(redis, repo, settings.STATS_CACHE_TTL)
     return ComplaintService(repo, triage, limiter, stats)
