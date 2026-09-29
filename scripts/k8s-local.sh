@@ -18,6 +18,13 @@ case "$action" in
       kind create cluster --name "${CLUSTER_NAME}"
     fi
 
+    # Ensure metrics-server is installed for HPA
+    if ! kubectl get deployment metrics-server -n kube-system >/dev/null 2>&1; then
+      echo "Installing metrics-server for HPA..."
+      kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
+      kubectl patch deployment metrics-server -n kube-system --type 'json' -p '[{"op": "add", "path": "/spec/template/spec/containers/0/args/-", "value": "--kubelet-insecure-tls"}]'
+    fi
+
     echo "Building local images..."
     docker build -t "ghcr.io/o0on/civicpulse-backend:local" ./backend
     docker build -t "ghcr.io/o0on/civicpulse-frontend:local" ./frontend
