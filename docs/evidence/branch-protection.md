@@ -58,3 +58,15 @@ Executing `gh api repos/o0on/CivicPulse/rulesets` verifies the active ruleset:
   }
 ]
 ```
+
+---
+
+## Visual Evidence
+
+### 1. Ruleset Configuration (Require PR, Approvals, Linear History)
+![Branch Protection Settings](branch-protection-1.png)
+
+### 2. Required Status Checks (CI Workflow)
+![Required Status Checks](branch-protection-2.png)
+
+

@@ -136,6 +136,7 @@ Detailed documentation and test evidence are located in [`docs/`](docs/) and [`d
 - **Blocked Merge (Red $\rightarrow$ Green):** [`docs/evidence/blocked-merge.md`](docs/evidence/blocked-merge.md)
 - **HPA Autoscaling & Load Verification:** [`docs/evidence/hpa-scaling.md`](docs/evidence/hpa-scaling.md)
 - **Zero-Downtime Rolling Update Demonstration:** [`docs/evidence/zero-downtime.md`](docs/evidence/zero-downtime.md)
+- **GHCR Container Images & Versioning:** [`docs/evidence/ghcr-packages.md`](docs/evidence/ghcr-packages.md)
 - **Architectural Decision Records (ADRs):** [`docs/adr/`](docs/adr/)
 - **Engineering Notes & Design Questions:** [`docs/ENGINEERING-NOTES.md`](docs/ENGINEERING-NOTES.md)
 - **Operational Runbook:** [`docs/RUNBOOK.md`](docs/RUNBOOK.md)
