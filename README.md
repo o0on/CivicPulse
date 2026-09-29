@@ -4,8 +4,8 @@
 CivicPulse is a modern 3-tier web application built to collect, triage, and visualize municipal complaints (e.g., potholes, broken streetlights). Given the overwhelming number of unstructured complaints submitted to city councils, CivicPulse uses an intelligent triage engine (leveraging LLMs) to automatically categorize complaints, assign priority, and extract location entities. This allows city officials to efficiently allocate resources and address the most critical issues first.
 
 ## Badges
-![CI Status](https://img.shields.io/github/actions/workflow/status/username/CivicPulse/ci.yml?branch=main&label=CI)
-![CD Status](https://img.shields.io/github/actions/workflow/status/username/CivicPulse/cd.yml?branch=main&label=CD)
+![CI Status](https://img.shields.io/github/actions/workflow/status/o0on/CivicPulse/ci.yml?branch=main&label=CI)
+![CD Status](https://img.shields.io/github/actions/workflow/status/o0on/CivicPulse/cd.yml?branch=main&label=CD)
 ![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
 
 ## Architecture
@@ -32,24 +32,57 @@ flowchart TD
     TriageEngine -.-> |API Call| Groq/Gemini/OpenAI([External LLM Providers])
 ```
 
-## Quickstart
+## Quickstart & Deployment
 
-To build and run the entire application locally using Docker Compose:
+CivicPulse supports two execution methods: **Docker Compose** (for standard local development) and **Local Kubernetes** (for simulating production orchestration).
+
+### Method 1: Docker Compose (Local Development)
+
+The fastest way to run the entire application stack (Frontend, Backend, PostgreSQL, Redis) locally:
 
 ```bash
+# 1. Copy environment variables
+cp .env.example .env
+
+# 2. Build and start services in the background
 docker compose up --build -d
 ```
 
-This will spin up:
-- Frontend at `http://localhost:8080`
-- Backend API at `http://localhost:8000` (Docs at `http://localhost:8000/docs`)
-- Redis at `localhost:6379`
-- PostgreSQL at `localhost:5432`
+- **Frontend UI**: [http://localhost:3000](http://localhost:3000)
+- **API Health Check**: [http://localhost:3000/api/health](http://localhost:3000/api/health)
+- **Readiness Probe**: [http://localhost:3000/api/ready](http://localhost:3000/api/ready)
 
-To shut down:
+To shut down and clean up containers:
 ```bash
 docker compose down -v
 ```
+
+---
+
+### Method 2: Local Kubernetes via Kind (Production-grade Simulation)
+
+To test the complete Kubernetes architecture locally (Deployments, StatefulSets, persistent volumes, health probes, and automated database migrations):
+
+```bash
+# 1. Start the cluster, build & load images, apply manifests, and run migrations
+./scripts/k8s-local.sh start
+
+# 2. Forward the frontend service port to localhost
+kubectl port-forward -n civicpulse svc/frontend 3000:80
+```
+
+- **Frontend UI**: [http://localhost:3000](http://localhost:3000)
+- **Check Cluster Status**:
+  ```bash
+  ./scripts/k8s-local.sh status
+  ```
+
+To stop and delete the local Kubernetes cluster:
+```bash
+./scripts/k8s-local.sh stop
+```
+
+> **Note**: Both methods expose the frontend on port `3000`. Stop one before starting the other to avoid port collision.
 
 ## API Table
 
