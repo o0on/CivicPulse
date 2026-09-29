@@ -10,4 +10,3 @@ tests/
 dist/
 build/
 .git/
-alembic/versions/
