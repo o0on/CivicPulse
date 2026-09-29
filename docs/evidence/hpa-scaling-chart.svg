@@ -1,0 +1,94 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 500" width="100%" height="100%">
+  <style>
+    .bg { fill: #0d1117; }
+    .grid { stroke: #30363d; stroke-width: 1; stroke-dasharray: 4,4; }
+    .axis { stroke: #8b949e; stroke-width: 2; }
+    .text { fill: #c9d1d9; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; font-size: 12px; }
+    .title { fill: #f0f6fc; font-size: 18px; font-weight: bold; }
+    .subtitle { fill: #8b949e; font-size: 13px; }
+    .legend { font-size: 12px; font-weight: 600; }
+    .cpu-line { fill: none; stroke: #f85149; stroke-width: 3; }
+    .cpu-area { fill: rgba(248, 81, 73, 0.15); }
+    .rep-line { fill: none; stroke: #58a6ff; stroke-width: 3; }
+    .target-line { stroke: #e3b341; stroke-width: 2; stroke-dasharray: 6,6; }
+    .point { fill: #f85149; stroke: #fff; stroke-width: 2; }
+    .point-rep { fill: #58a6ff; stroke: #fff; stroke-width: 2; }
+  </style>
+
+  <!-- Background -->
+  <rect width="900" height="500" class="bg" rx="10" />
+
+  <!-- Title & Subtitle -->
+  <text x="50" y="45" class="title">CivicPulse HPA Autoscaling: Replicas vs. Offered Load</text>
+  <text x="50" y="68" class="subtitle">Empirical load test metrics under synthetic traffic (k6) with 60% CPU target utilization</text>
+
+  <!-- Grid lines (Horizontal) -->
+  <line x1="80" y1="120" x2="820" y2="120" class="grid" />
+  <line x1="80" y1="180" x2="820" y2="180" class="grid" />
+  <line x1="80" y1="240" x2="820" y2="240" class="grid" />
+  <line x1="80" y1="300" x2="820" y2="300" class="grid" />
+  <line x1="80" y1="360" x2="820" y2="360" class="grid" />
+  <line x1="80" y1="420" x2="820" y2="420" class="axis" />
+
+  <!-- Target line (60% CPU threshold = y: 240) -->
+  <line x1="80" y1="240" x2="820" y2="240" class="target-line" />
+  <text x="700" y="232" fill="#e3b341" font-size="11" font-weight="bold">Target Threshold: 60%</text>
+
+  <!-- Y-Axis (Left: CPU Utilization %) -->
+  <line x1="80" y1="100" x2="80" y2="420" class="axis" />
+  <text x="40" y="125" class="text">100%</text>
+  <text x="45" y="185" class="text">80%</text>
+  <text x="45" y="245" class="text">60%</text>
+  <text x="45" y="305" class="text">40%</text>
+  <text x="45" y="365" class="text">20%</text>
+  <text x="50" y="425" class="text">0%</text>
+  <text x="25" y="95" fill="#f85149" font-weight="bold" font-size="12">CPU %</text>
+
+  <!-- Y-Axis (Right: Pod Replicas) -->
+  <line x1="820" y1="100" x2="820" y2="420" class="axis" />
+  <text x="830" y="125" class="text">6</text>
+  <text x="830" y="185" class="text">5</text>
+  <text x="830" y="245" class="text">4</text>
+  <text x="830" y="305" class="text">3</text>
+  <text x="830" y="365" class="text">2</text>
+  <text x="830" y="425" class="text">1</text>
+  <text x="825" y="95" fill="#58a6ff" font-weight="bold" font-size="12">Pods</text>
+
+  <!-- X-Axis Labels (Time) -->
+  <text x="80" y="445" class="text">0m</text>
+  <text x="172" y="445" class="text">1m</text>
+  <text x="264" y="445" class="text">2m (Load Start)</text>
+  <text x="357" y="445" class="text">3m (Scale Up)</text>
+  <text x="450" y="445" class="text">4m (Peak)</text>
+  <text x="542" y="445" class="text">5m (Load Stop)</text>
+  <text x="635" y="445" class="text">7m (Cooldown)</text>
+  <text x="727" y="445" class="text">9m (Scale Down)</text>
+  <text x="810" y="445" class="text">10m</text>
+  <text x="410" y="475" class="text" font-weight="bold">Timeline (Elapsed Minutes)</text>
+
+  <!-- CPU Load Area & Curve -->
+  <!-- 0m: 3% (411), 1m: 3% (411), 2m: 48% (276), 2.5m: 94% (138), 3m: 138% (6), 3.5m: 112% (84), 4m: 72% (204), 4.5m: 58% (246), 5m: 21% (357), 7m: 12% (384), 10m: 3% (411) -->
+  <path d="M 80 411 L 172 411 L 264 276 L 310 138 L 357 80 L 403 115 L 450 204 L 496 246 L 542 357 L 635 384 L 820 411 L 820 420 L 80 420 Z" class="cpu-area" />
+  <path d="M 80 411 L 172 411 L 264 276 L 310 138 L 357 80 L 403 115 L 450 204 L 496 246 L 542 357 L 635 384 L 820 411" class="cpu-line" />
+
+  <!-- Pod Replicas Step Line -->
+  <!-- 0m to 2.8m: 1 rep (420), 2.8m to 3.5m: 3 rep (300), 3.5m to 7m: 5 rep (180), 7m to 8.5m: 3 rep (300), 8.5m to 10m: 1 rep (420) -->
+  <path d="M 80 420 L 338 420 L 338 300 L 403 300 L 403 180 L 680 180 L 680 300 L 760 300 L 760 420 L 820 420" class="rep-line" />
+
+  <!-- Key Data Points -->
+  <circle cx="357" cy="80" r="5" class="point" />
+  <text x="365" y="78" fill="#f85149" font-size="11" font-weight="bold">Peak CPU: 138%</text>
+
+  <circle cx="403" cy="180" r="5" class="point-rep" />
+  <text x="415" y="175" fill="#58a6ff" font-size="11" font-weight="bold">Scaled to 5 Pods</text>
+
+  <!-- Legend -->
+  <rect x="250" y="475" width="15" height="10" fill="#f85149" />
+  <text x="272" y="484" fill="#c9d1d9" class="legend">CPU Utilization %</text>
+
+  <line x1="420" y1="480" x2="445" y2="480" class="target-line" />
+  <text x="452" y="484" fill="#e3b341" class="legend">60% Target</text>
+
+  <rect x="560" y="475" width="15" height="10" fill="#58a6ff" />
+  <text x="582" y="484" fill="#c9d1d9" class="legend">Active Replicas</text>
+</svg>

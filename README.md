@@ -118,6 +118,16 @@ CivicPulse backend is implemented using **FastAPI** (Python 3.12) rather than Fl
 
 ---
 
+## Application Screenshots
+
+| View | Screenshot |
+| :--- | :--- |
+| **Complaint Submission & AI Triage** | ![Submit View](docs/evidence/app-submit.png) |
+| **Municipal Operations Dashboard** | ![Dashboard View](docs/evidence/app-dashboard.png) |
+| **Aggregated Analytics & Cache Status** | ![Stats View](docs/evidence/app-stats.png) |
+
+---
+
 ## Evidence & Verification Documents
 
 Detailed documentation and test evidence are located in [`docs/`](docs/) and [`docs/evidence/`](docs/evidence/):
