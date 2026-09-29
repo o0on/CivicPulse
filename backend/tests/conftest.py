@@ -46,6 +46,9 @@ def mock_redis():
     redis.set.return_value = True
     redis.delete.return_value = 1
     redis.ping.return_value = True
+    redis.lrange.return_value = []
+    redis.lpush.return_value = 1
+    redis.ltrim.return_value = True
     return redis
 
 @pytest.fixture

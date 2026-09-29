@@ -31,6 +31,8 @@ services:
   backend:
     build: ./backend
     env_file: .env
+    volumes:
+      - ./backend/app:/app/app
     networks: [edge, internal]
     depends_on:
       postgres: {condition: service_healthy}

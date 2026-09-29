@@ -15,20 +15,40 @@ To manually deploy a specific configuration:
 
 ## Rollback Procedures
 
-If a bad deployment goes out, you can roll back the deployment in Kubernetes.
+CivicPulse supports two distinct rollback mechanisms depending on the operational context:
 
-1. Find the previous revision:
-   ```bash
-   kubectl rollout history deployment/backend -n civicpulse
-   ```
-2. Undo the rollout:
-   ```bash
-   kubectl rollout undo deployment/backend -n civicpulse
-   ```
-3. Verify the pods are running the previous stable image:
-   ```bash
-   kubectl get pods -n civicpulse
-   ```
+### Mechanism 1: Fast Imperative Rollback (`kubectl rollout undo`)
+* **When to use**: The **3:00 AM emergency answer**. When production is actively degraded or throwing errors, you need immediate recovery in seconds without waiting for a CI/CD build cycle.
+* **Procedure**:
+  1. Inspect deployment revision history:
+     ```bash
+     kubectl rollout history deployment/backend -n civicpulse
+     ```
+  2. Roll back immediately to the previous deployment revision:
+     ```bash
+     kubectl rollout undo deployment/backend -n civicpulse
+     kubectl rollout undo deployment/frontend -n civicpulse
+     ```
+  3. Verify status:
+     ```bash
+     kubectl rollout status deployment/backend -n civicpulse
+     kubectl get pods -n civicpulse
+     ```
+
+### Mechanism 2: Declarative Git-Audited Rollback (Previous Commit SHA)
+* **When to use**: The **correct, auditable answer once the fire is out**. Restores synchronization between Git repository state and cluster state so that future CI/CD runs don't overwrite the rollback.
+* **Procedure**:
+  1. Identify the last known good commit SHA from git history (`git log --oneline -n 5`).
+  2. Re-apply the manifest using the known-good image SHA:
+     ```bash
+     cd k8s/overlays/prod
+     kustomize edit set image \
+       ghcr.io/YOUR_ORG/civicpulse-backend=ghcr.io/o0on/civicpulse-backend:<PREVIOUS_STABLE_SHA> \
+       ghcr.io/YOUR_ORG/civicpulse-frontend=ghcr.io/o0on/civicpulse-frontend:<PREVIOUS_STABLE_SHA>
+     kubectl apply -k .
+     ```
+  3. Alternatively, revert the commit in Git (`git revert <BAD_COMMIT_SHA>`) and push to `main` so the automated CD pipeline redeploys the stable SHA declaratively.
+
 
 ## Checking Logs
 
