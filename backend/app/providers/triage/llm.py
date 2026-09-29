@@ -46,7 +46,7 @@ Respond ONLY with valid JSON:
   "confidence": 0.0-1.0}}"""
 
         if self.provider == "gemini":
-            url = f"https://generativelanguage.googleapis.com/v1/models/{self.model}:generateContent?key={self.api_key}"
+            url = f"https://generativelanguage.googleapis.com/v1beta/models/{self.model}:generateContent?key={self.api_key}"
             payload = {
                 "contents": [{"parts": [{"text": prompt}]}],
                 "generationConfig": {"responseMimeType": "application/json"}
