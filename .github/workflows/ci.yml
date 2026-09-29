@@ -94,7 +94,7 @@ jobs:
           sleep 30
       - name: Wait for health
         run: |
-          timeout 60 bash -c 'until curl -sf http://localhost:3000/health; do sleep 2; done'
+          timeout 90 bash -c 'until curl -sf http://localhost:3000/api/ready; do sleep 2; done'
       - name: Smoke test API
         run: |
           curl -sf http://localhost:3000/api/health

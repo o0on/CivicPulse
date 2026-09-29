@@ -2,6 +2,7 @@ import asyncio
 import hashlib
 import json
 import time
+from datetime import datetime, timezone
 
 from redis.asyncio import Redis
 
@@ -39,6 +40,19 @@ class TriageService:
             "latency_ms": latency_ms
         }
         await self.redis.set(cache_key, json.dumps(cache_data), ex=86400)
+
+        # Record observability outcome for /api/meta/providers (last 20 outcomes)
+        try:
+            outcome = {
+                "provider": triaged_by,
+                "latency_ms": latency_ms,
+                "fallback": triaged_by == "rules:fallback",
+                "timestamp": datetime.now(timezone.utc).isoformat()
+            }
+            await self.redis.lpush("meta:triage_history", json.dumps(outcome))
+            await self.redis.ltrim("meta:triage_history", 0, 19)
+        except Exception:
+            pass
         
         return result, triaged_by, latency_ms
 
