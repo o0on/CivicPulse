@@ -63,6 +63,14 @@ case "$action" in
     echo "Running database migrations..."
     kubectl exec -n "${NAMESPACE}" deployment/backend -- /bin/sh -c "cd /app && alembic upgrade head"
     echo "Kubernetes deployment ready!"
+    echo "To access the application, run:"
+    echo "  ./scripts/k8s-local.sh forward"
+    echo "  or: kubectl port-forward -n civicpulse svc/frontend 3000:80"
+    ;;
+
+  forward)
+    echo "=== Forwarding CivicPulse Frontend to http://localhost:3000 ==="
+    kubectl port-forward -n "${NAMESPACE}" svc/frontend 3000:80
     ;;
 
   status)
@@ -77,7 +85,8 @@ case "$action" in
     ;;
 
   *)
-    echo "Usage: $0 {start|status|stop}"
+    echo "Usage: $0 {start|forward|status|stop}"
     exit 1
     ;;
+
 esac

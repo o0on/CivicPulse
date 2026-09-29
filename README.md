@@ -143,6 +143,7 @@ Detailed documentation and test evidence are located in [`docs/`](docs/) and [`d
 ---
 
 ## Demo Video
-[Link to Demo Walkthrough Video](https://youtube.com/placeholder)
+[Link to Demo Walkthrough Video](https://youtu.be/EAcAIw-OHnc?si=2k2MD9Fm3C2KdZF4)
 *(Video duration: $\le 5$ minutes, covers clean clone, Docker Compose and K8s startup, AI triage with fallback, rate limiting, HPA autoscaling, and rollback).*
+
 
