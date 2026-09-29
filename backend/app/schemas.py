@@ -64,3 +64,15 @@ class ReadyResponse(BaseModel):
 class ErrorResponse(BaseModel):
     detail: str
     error_code: str | None = None
+
+class TriageOutcome(BaseModel):
+    provider: str
+    latency_ms: int
+    fallback: bool
+    timestamp: datetime
+    complaint_id: str | None = None
+
+class MetaProvidersResponse(BaseModel):
+    active_provider: str
+    history: list[TriageOutcome] = []
+

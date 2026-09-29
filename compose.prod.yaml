@@ -4,9 +4,7 @@ services:
   redis:
     ports: []
   backend:
-    image: ghcr.io/YOUR_ORG/civicpulse-backend:${IMAGE_TAG:-latest}
-    build:
-      context: ./backend
+    image: ghcr.io/o0on/civicpulse-backend:${IMAGE_TAG}
     env_file: []
     read_only: true
     deploy:
@@ -20,9 +18,7 @@ services:
       timeout: 10s
       retries: 3
   frontend:
-    image: ghcr.io/YOUR_ORG/civicpulse-frontend:${IMAGE_TAG:-latest}
-    build:
-      context: ./frontend
+    image: ghcr.io/o0on/civicpulse-frontend:${IMAGE_TAG}
     ports: ["80:80"]
     read_only: true
     deploy:
@@ -35,3 +31,4 @@ services:
       interval: 30s
       timeout: 10s
       retries: 3
+

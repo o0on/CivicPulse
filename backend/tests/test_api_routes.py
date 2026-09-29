@@ -91,6 +91,23 @@ async def test_rate_limit_429(mock_is_allowed, test_client):
     assert response.status_code == 429
     assert response.headers.get("Retry-After") == "45"
 
-# Test: pagination boundary limits up to 100 items
+@pytest.mark.asyncio
+async def test_meta_providers_endpoint(test_client, mock_redis):
+    import json
+    from datetime import datetime, timezone
+    sample_entry = {
+        "provider": "rules",
+        "latency_ms": 32,
+        "fallback": False,
+        "timestamp": datetime.now(timezone.utc).isoformat()
+    }
+    mock_redis.lrange.return_value = [json.dumps(sample_entry)]
+    response = await test_client.get("/api/meta/providers")
+    assert response.status_code == 200
+    data = response.json()
+    assert "active_provider" in data
+    assert "history" in data
+    assert len(data["history"]) == 1
+    assert data["history"][0]["provider"] == "rules"
+    assert data["history"][0]["latency_ms"] == 32
 
-# Test: verify 404 response detail schema on missing complaint

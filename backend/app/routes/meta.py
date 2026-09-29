@@ -1,11 +1,13 @@
+import json
 from datetime import datetime, timezone
 
-from fastapi import APIRouter, Response
+from fastapi import APIRouter, Depends, Response
+from redis.asyncio import Redis
 
 from app.core.config import settings
 from app.core.database import check_db_health
-from app.core.redis import check_redis_health
-from app.schemas import HealthResponse, ReadyResponse
+from app.core.redis import check_redis_health, get_redis
+from app.schemas import HealthResponse, MetaProvidersResponse, ReadyResponse, TriageOutcome
 
 router = APIRouter(tags=["meta"])
 
@@ -38,4 +40,21 @@ async def ready(response: Response) -> ReadyResponse:
     )
 
 
-# Healthcheck pool telemetry
+@router.get("/meta/providers", response_model=MetaProvidersResponse)
+async def get_meta_providers(redis: Redis = Depends(get_redis)) -> MetaProvidersResponse:
+    """Surfaces active triage provider and last 20 triage outcomes (provider, latency ms, fallback)."""
+    active_provider = settings.TRIAGE_PROVIDER
+    raw_history = await redis.lrange("meta:triage_history", 0, 19)
+    history: list[TriageOutcome] = []
+    for item in raw_history:
+        try:
+            parsed = json.loads(item)
+            history.append(TriageOutcome(**parsed))
+        except Exception:
+            continue
+
+    return MetaProvidersResponse(
+        active_provider=active_provider,
+        history=history,
+    )
+
