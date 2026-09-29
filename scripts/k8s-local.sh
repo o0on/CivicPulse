@@ -25,6 +25,12 @@ case "$action" in
       kubectl patch deployment metrics-server -n kube-system --type 'json' -p '[{"op": "add", "path": "/spec/template/spec/containers/0/args/-", "value": "--kubelet-insecure-tls"}]'
     fi
 
+    # Ensure VPA CRDs are installed
+    if ! kubectl get crd verticalpodautoscalers.autoscaling.k8s.io >/dev/null 2>&1; then
+      echo "Installing VPA CRDs..."
+      kubectl apply -f https://raw.githubusercontent.com/kubernetes/autoscaler/master/vertical-pod-autoscaler/deploy/vpa-v1-crd-gen.yaml
+    fi
+
     echo "Building local images..."
     docker build -t "ghcr.io/o0on/civicpulse-backend:local" ./backend
     docker build -t "ghcr.io/o0on/civicpulse-frontend:local" ./frontend
