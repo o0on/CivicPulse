@@ -10,10 +10,14 @@ PORT=8000
 
 echo "=== CivicPulse Zero-Downtime Rolling Update Demonstration ==="
 
+echo "Ensuring deployment has at least 2 replicas for high availability..."
+kubectl scale deployment/"${DEPLOYMENT}" -n "${NAMESPACE}" --replicas=2
+kubectl rollout status deployment/"${DEPLOYMENT}" -n "${NAMESPACE}" --timeout=60s
+
 # 1. Start port-forwarding in background if not already accessible
 if ! curl -sf "http://localhost:${PORT}/health" >/dev/null 2>&1; then
     echo "Starting port-forward for backend service on port ${PORT}..."
-    kubectl port-forward -n "${NAMESPACE}" "deployment/${DEPLOYMENT}" "${PORT}:${PORT}" &
+    kubectl port-forward -n "${NAMESPACE}" "svc/${DEPLOYMENT}" "${PORT}:${PORT}" &
     PF_PID=$!
     trap 'kill ${PF_PID} 2>/dev/null || true' EXIT
     sleep 3
