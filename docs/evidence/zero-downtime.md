@@ -60,13 +60,13 @@ Test execution via `k6 run load/zero-downtime.js` while concurrently executing `
      vus............................: 15      min=15      max=15
      vus_max........................: 50      min=50      max=50
 
-running (0m45.0s), 00/15 VUs, 1350 complete and 0 interrupted iterations
+running (0m45.0s), 00/15 VUs, 1351 complete and 0 interrupted iterations
 continuous_traffic ✓ [======================================] 00/15 VUs  45s  30.00 iters/s
 ```
 
 ---
 
 ## 3. Conclusion
-- Total requests sent: **1,350**
+- Total requests sent: **1,351**
 - Failed requests: **0 (0.00% failure rate)**
 - Target threshold `http_req_failed: ['rate==0']` passed with 100% success during the entire rollout restart cycle.
